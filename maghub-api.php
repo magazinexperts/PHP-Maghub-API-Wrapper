@@ -1,5 +1,5 @@
 <?php
-include_once( '../php_build_url.php');
+include_once( 'includes/php_build_url.php');
 
 class maghub_api {
 	private $base_url;

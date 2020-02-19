@@ -7,8 +7,8 @@ class maghub_api {
 	private $public_key;
 	protected $headers = array();
 
-	public function __construct( $base_url, $private_key, $public_key ){
-		$this->base_url = $base_url;
+	public function __construct( $site_name = MAGHUB_SITE, $private_key = MAGHUB_PRIVATE_KEY, $public_key = MAGHUB_PUBLIC_KEY){
+		$this->base_url = 'https://'. $site_name .'.api.maghub.com/';
 		$this->private_key = $private_key;
 		$this->public_key = $public_key;
 	}
@@ -35,6 +35,7 @@ class maghub_api {
 	}
 
 	public function build_accept_header( $resource_name = ""){
+		
 		if( empty( $resource_name ) ){
 			return "application/vnd.maghub+json;version=1.0";
 		} else {
@@ -88,6 +89,118 @@ class maghub_api {
 		curl_close($curl);
 		return array( 'content' => json_decode( $content, true ), 'info' => $info );
 	}
+	
+	public function post_request( $endpoint, $resource_name, $extra_headers = array(), $body = array() ){
+		$method = "POST";
+		/*
+		if(!empty($get)){
+			$endpoint_array = parse_url( $endpoint );
+			$endpoint_array['query'] = http_build_query( $get );
+			$endpoint = http_build_url($endpoint_array);
+		}
+		*/
+		
+		$default_post_headers = array(
+			"Content-Type: application/x-www-form-urlencoded"
+		);
+		
+		$extra_headers = array_merge( $default_post_headers, $extra_headers );
+		
+		if(!empty($body)){
+			$fields_string = http_build_query( $body );
+		} else {
+			$fields_string = "";
+		}
+
+		if(substr($endpoint,0,1) == "/"){
+			$endpoint = substr($endpoint,1);
+		}
+
+		$headers = $this->prepare_headers( $method, $endpoint, $resource_name, $extra_headers );
+		
+		//$signature = $this->build_signature( $endpoint, $resource_name );
+		//$accepts_header = $this->build_accept_header( $resource_name );
+		$uri = $this->build_uri( $endpoint );
+		//echo '<pre>'. print_r($headers,true) .'</pre>';
+		//echo "STARTING REQUEST FOR {$endpoint}:<br>\n";
+		$curl = curl_init();
+		curl_setopt_array( $curl, array(
+		   CURLOPT_RETURNTRANSFER => 1,
+		   CURLOPT_URL => $uri,
+		   CURLOPT_POST => 1,
+		   CURLOPT_HTTPHEADER => $headers,
+		   CURLOPT_POSTFIELDS => $fields_string
+
+		   /*
+		   CURLOPT_HTTPHEADER => array(
+				"Accept: {$accepts_header}",
+				"Authorization: MAGHUB {$this->public_key}:{$signature}",
+			),
+			*/
+		   )
+		);
+		
+		$content = curl_exec($curl);
+		$info = curl_getinfo($curl);
+		curl_close($curl);
+		return array( 'content' => json_decode( $content, true ), 'info' => $info );
+	}
+	
+	public function put_request( $endpoint, $resource_name, $extra_headers = array(), $body = array() ){
+		$method = "PUT";
+		/*
+		if(!empty($get)){
+			$endpoint_array = parse_url( $endpoint );
+			$endpoint_array['query'] = http_build_query( $get );
+			$endpoint = http_build_url($endpoint_array);
+		}
+		*/
+		
+		$default_post_headers = array(
+			"Content-Type: application/x-www-form-urlencoded"
+		);
+		
+		$extra_headers = array_merge( $default_post_headers, $extra_headers );
+		
+		if(!empty($body)){
+			$fields_string = http_build_query( $body );
+		} else {
+			$fields_string = "";
+		}
+
+		if(substr($endpoint,0,1) == "/"){
+			$endpoint = substr($endpoint,1);
+		}
+
+		$headers = $this->prepare_headers( $method, $endpoint, $resource_name, $extra_headers );
+		
+		//$signature = $this->build_signature( $endpoint, $resource_name );
+		//$accepts_header = $this->build_accept_header( $resource_name );
+		$uri = $this->build_uri( $endpoint );
+		//echo '<pre>'. print_r($headers,true) .'</pre>';
+		//echo "STARTING REQUEST FOR {$endpoint}:<br>\n";
+		$curl = curl_init();
+		curl_setopt_array( $curl, array(
+		   CURLOPT_RETURNTRANSFER => 1,
+		   CURLOPT_URL => $uri,
+		   CURLOPT_CUSTOMREQUEST => 'PUT',
+		   CURLOPT_HTTPHEADER => $headers,
+		   CURLOPT_POSTFIELDS => $fields_string
+
+		   /*
+		   CURLOPT_HTTPHEADER => array(
+				"Accept: {$accepts_header}",
+				"Authorization: MAGHUB {$this->public_key}:{$signature}",
+			),
+			*/
+		   )
+		);
+		
+		$content = curl_exec($curl);
+		$info = curl_getinfo($curl);
+		curl_close($curl);
+		return array( 'content' => json_decode( $content, true ), 'info' => $info );
+	}
 
 	//application/vnd.maghub+json;version=1.0
 	//application/vnd.maghub.companies+json;version=1.0
@@ -98,7 +211,6 @@ class maghub_api {
 		$results = $this->get_request( $endpoint, $resource_name );
 		return $results;
 	}
-
 	
 	public function get_companies_by( $field, $value, $page = 0, $num_per_page = 10 ){
 		$available_args = array(
@@ -140,6 +252,13 @@ class maghub_api {
 		return $results;
 	}
 	
+	function get_company_assets( ){
+		$endpoint = "companyassets";
+		$resource_name = "companyassets";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
 	function get_company_orders( $company_id ){
 		$company_id = intval( $company_id );
 		$endpoint = "companies/{$company_id}/orders";
@@ -162,7 +281,6 @@ class maghub_api {
 			
 		}
 		
-		
 		$company_id = intval( $company_id );
 		$endpoint = "companies/{$company_id}/categories";
 		$resource_name = "company-categories";
@@ -178,18 +296,19 @@ class maghub_api {
 		return $results;
 	}
 	
+		
+	function get_company_attribute_fields( ){
+		$endpoint = "company-attribute-fields";
+		$resource_name = "company-attribute-fields";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
 	function get_company_category( $company_id, $category_id ){
 		$company_id = intval( $company_id );
 		$category_id = intval( $company_id );
 		$endpoint = "companies/{$company_id}/category{$category_id}";
 		$resource_name = "company-category";
-		$results = $this->get_request( $endpoint, $resource_name );
-		return $results;
-	}
-	
-	function get_company_attribute_fields( ){
-		$endpoint = "company-attribute-fields";
-		$resource_name = "company-attribute-fields";
 		$results = $this->get_request( $endpoint, $resource_name );
 		return $results;
 	}
@@ -211,11 +330,13 @@ class maghub_api {
 	}
 	
 	function get_company_attribute_field_value( $company_id, $field_id ){
+		//parse_str($company_id);
+		//return print_r(func_get_args());
 		$company_id = intval( $company_id );
 		$field_id = intval( $field_id );
 		//https://magazinexperts.api.maghub.com/companies/68947/attribute-values/39
 		$endpoint = "companies/{$company_id}/attribute-values/{$field_id}";
-		$resource_name = "company-attribute-values";
+		$resource_name = "company-attribute-value";
 		$results = $this->get_request( $endpoint, $resource_name );
 		return $results;
 	}
@@ -228,6 +349,7 @@ class maghub_api {
 			'name',
 			'email',
 			'phone',
+			//'changed_since',
 		);
 		$endpoint = "contacts";
 		$resource_name = "contacts";
@@ -252,7 +374,8 @@ class maghub_api {
 			'active',
 			'name',
 			'email',
-			'phone'
+			'phone',
+			//'changed_since'
 		);
 		
 		$filters = array();
@@ -289,18 +412,62 @@ class maghub_api {
 		return $results;
 	}
 
+	public function get_editorials(){
+		$endpoint = "editorials";
+		$resource_name = "editorials";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}	
+	
+	public function get_editorial( $id ){
+		$id = intval( $id );
+		$endpoint = "editorials/{$id}";
+		$resource_name = "editorials";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	public function get_lead_statuses(){
+		$endpoint = "lead-statuses";
+		$resource_name = "lead-statuses";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	public function get_lead_sources(){
+		$endpoint = "lead-sources";
+		$resource_name = "lead-sources";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
 	public function get_orders(){
 		$endpoint = "orders";
 		$resource_name = "orders";
 		$results = $this->get_request( $endpoint, $resource_name );
 		return $results;
 	}
-
+	
 	public function get_order( $id ){
 		$id = intval( $id );
 		#$endpoint = "orders?order_id={$id}";
 		$endpoint = "orders/{$id}";
 		$resource_name = "order";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	public function get_personel( $id ){
+		$id = intval( $id );
+		$endpoint = "personnel/{$id}";
+		$resource_name = "personnel";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	public function get_projects(){
+		$endpoint = "projects";
+		$resource_name = "projects";
 		$results = $this->get_request( $endpoint, $resource_name );
 		return $results;
 	}
@@ -325,12 +492,35 @@ class maghub_api {
 		return $results;
 	}
 
+	public function get_tickets(){
+		$endpoint = "tickets";
+		$resource_name = "tickets";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	public function get_ticket_statuses(){
+		$endpoint = "ticket-statuses";
+		$resource_name = "ticket-statuses";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	public function get_ad_ticket( $id ){
+		$id = intval( $id );
+		$endpoint = "ad-ticket/{$id}";
+		$resource_name = "ad-ticket";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
 	public function get_vendors(){
 		$endpoint = "vendors";
 		$resource_name = "vendors";
 		$results = $this->get_request( $endpoint, $resource_name );
 		return $results;
 	}
+
 
 	public function get_vendor( $id ){
 		$id = intval( $id );
@@ -339,14 +529,210 @@ class maghub_api {
 		$results = $this->get_request( $endpoint, $resource_name );
 		return $results;
 	}
-
-	public function get_personel( $id ){
+	
+	public function get_subscribers(){
+		$endpoint = "subscribers";
+		$resource_name = "subscribers";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	public function get_subscriber_by_id( $id ){
+			$this->get_subscriber( $id );
+	}
+	
+	public function get_subscriber( $id ){
 		$id = intval( $id );
-		$endpoint = "personnel/{$id}";
-		$resource_name = "personnel";
+		$endpoint = "subscribers/{$id}";
+		$resource_name = "subscribers";
 		$results = $this->get_request( $endpoint, $resource_name );
 		return $results;
 	}
 
+	public function get_entitlement( $email , $password, $type ){
+		//$types_possible = array( 'user', 'contact' );
+		
+		$endpoint = "entitlement";
+		$resource_name = "";
+		$results = $this->post_request( $endpoint, $resource_name, array(), array( 
+			'email' 	=> $email,
+			'password' 	=> $password,
+			//'type' 		=> $type
+			));
+		return $results['content'];
+	}
+	
+	public function get_user_entitlement( $email, $password ){
+		return $this->get_entitlement( $email, $password, 'user' );
+	}
+	
+	public function get_contact_entitlement( $email, $password ){
+		return $this->get_entitlement( $email, $password, 'contact' );
+	}
+
+	
+	public function get_login(){
+		return $this->login();
+	}
+	
+	public function login(){
+		$endpoint = "login";
+		$resource_name = "login";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	
+	/*
+	BELOW THIS COMMENT FUNCTIONS MAY NOT WORK YET
+	*/
+	
+	function set_company_attribute_field_value( $company_id, $field_id, $value ){
+		$company_id = intval( $company_id );
+		$field_id = intval( $field_id );
+		$endpoint = "companies/{$company_id}/attribute-values/{$field_id}";
+		$resource_name = "company-attribute-value";
+		$results = $this->post_request( $endpoint, $resource_name, array(), array(
+			'value'	=> $value
+		));
+		return $results;
+		
+		//$extra_headers = array(), $body = array() 
+	}
+	
+	function helper_set_company_attribute_field_value( $company_id, $field_name, $value ){
+		
+	}
+	public function get_user_information(){
+		
+	}
+	
+	public function get_user_info(){
+		return $this->get_user_information();
+	}
+	
+	public function get_issues_by_token( $token ){
+		
+	}
+	
+	public function get_subscriptions_by_token( $token ){
+		
+	}
+	
+	public function get_issues_by_subscriptions_and_token( $subscription_id, $token ){
+		
+	}
+	
+	public function get_issues_by_publicatication_and_token( $publication_id, $token ){
+		
+	}
+	
+	public function create_contact(){
+		$endpoint = "contacts/0";
+		$resource_name = "contacts";
+		
+		$available_args = array(
+			'firstName',
+			'lastName',
+			'address1',
+			'address2',
+			'city',
+			'state',
+			'zipCode',
+			'contact_country',
+			'emailAddress',
+			'cellPhoneNumber',
+			'officePhoneNumber',
+			'alternatePhoneNumber',
+			'alternateFaxNumber',
+			'faxNumber',
+			'isPrimaryContact',
+			'companyId',
+			'contact_notes'
+		);
+		
+	}
+	
+	public function update_contact( $contact_id ){
+		$contact_id = intval( $contact_id );
+		
+	}
+	
+	public function create_company(){
+		
+	}
+	
+	public function update_company( $company_id ){
+		$company_id = intval( $company_id );
+		
+	}
+	
+	public function create_subscriber(){
+		$available_args = array(
+			'firstName',
+			'lastName',
+			'address1',
+			'address2',
+			'city',
+			'state',
+			'zipCode',
+			'contact_country',
+			'emailAddress',
+			'cellPhoneNumber',
+			'officePhoneNumber',
+			'alternatePhoneNumber',
+			'alternateFaxNumber',
+			'faxNumber',
+			'isPrimaryContact',
+			'companyId',
+			'contact_notes',
+			'subscriber_type_ID',
+			'active',//bool as int
+			'password'
+		);
+		
+		$defaults = array(
+			'active' 	=> 1,
+		);
+	}
+	
+	public function create_subscription(){
+		$endpoint = "subscriptions/0";
+		$resource_name = "subscription";
+		
+		$available_args = array(
+			'subscriber_id', //int
+			'cost',
+			'pubid', //int
+			'comp', //bool as int
+			'paid', //bool as int
+			'source', //string
+			'status',
+			'startdate',
+			'endate',
+			'subscriber_type_ID',
+			'copies',
+			'media_type_id',
+			'is_gift', //bool as int
+			'gift_subscriber_id',
+			'verified_date',
+			'qualified_date',
+			'promo_code',
+		);
+		
+		$defaults = array(
+			'copies' 			=> 1,
+			'startdate'			=> date('Y-m-d', time() ),
+			'verified_date'		=> date('Y-m-d', time() ),
+			'is_gift'			=> 0,
+		);
+		
+	}
+	
+	public function update_subscription( $subscription_id ){
+		$subscription_id = intval( $subscription_id );
+		
+	}
+	
 }
 ?>

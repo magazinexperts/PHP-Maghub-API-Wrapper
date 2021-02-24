@@ -282,14 +282,25 @@ class maghub_api {
 	}
 	
 	function get_company_categories( $company_id ){
-		print_r($company_id);
-		if(is_array( $company_id )){
-			
-		}
-		
 		$company_id = intval( $company_id );
 		$endpoint = "companies/{$company_id}/categories";
 		$resource_name = "company-categories";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	function get_company_files( $company_id ){
+		$company_id = intval( $company_id );
+		$endpoint = "companies/{$company_id}/files";
+		$resource_name = "company-files";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	function get_company_opportunities( $company_id ){
+		$company_id = intval( $company_id );
+		$endpoint = "companies/{$company_id}/opportunities";
+		$resource_name = "company-opportunities";
 		$results = $this->get_request( $endpoint, $resource_name );
 		return $results;
 	}
@@ -302,7 +313,6 @@ class maghub_api {
 		return $results;
 	}
 	
-		
 	function get_company_attribute_fields( ){
 		$endpoint = "company-attribute-fields";
 		$resource_name = "company-attribute-fields";
@@ -456,9 +466,34 @@ class maghub_api {
 	
 	public function get_order( $id ){
 		$id = intval( $id );
-		#$endpoint = "orders?order_id={$id}";
 		$endpoint = "orders/{$id}";
 		$resource_name = "order";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	public function get_company_order_attribute_fields( $id ){
+		$id = intval( $id );
+		$endpoint = "company-order-attribute-fields/{$id}";
+		$resource_name = "company-order-attribute-fields";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	/* Not sure which ID is needed here, so can't confirm it works */
+	public function get_order_ad_sale_attributes( $id ){
+		$id = intval( $id );
+		$endpoint = "order-ad-sale/{$id}/attributes";
+		$resource_name = "order-ad-sale";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	/* Not sure which ID is needed here, so can't confirm it works */
+	public function get_order_service_sale_attributes( $id ){
+		$id = intval( $id );
+		$endpoint = "order-ad-sale/{$id}/attributes";
+		$resource_name = "order-service-sale";
 		$results = $this->get_request( $endpoint, $resource_name );
 		return $results;
 	}
@@ -566,25 +601,6 @@ class maghub_api {
 		$results = $this->get_request( $endpoint, $resource_name );
 		return $results;
 	}
-	
-	public function get_subscribers(){
-		$endpoint = "subscribers";
-		$resource_name = "subscribers";
-		$results = $this->get_request( $endpoint, $resource_name );
-		return $results;
-	}
-	
-	public function get_subscriber_by_id( $id ){
-			$this->get_subscriber( $id );
-	}
-	
-	public function get_subscriber( $id ){
-		$id = intval( $id );
-		$endpoint = "subscribers/{$id}";
-		$resource_name = "subscribers";
-		$results = $this->get_request( $endpoint, $resource_name );
-		return $results;
-	}
 
 	public function get_entitlement( $email , $password, $type ){
 		//$types_possible = array( 'user', 'contact' );
@@ -596,7 +612,7 @@ class maghub_api {
 			'password' 	=> $password,
 			//'type' 		=> $type
 			));
-		return $results['content'];
+		return $results;
 	}
 	
 	public function get_user_entitlement( $email, $password ){
@@ -606,7 +622,6 @@ class maghub_api {
 	public function get_contact_entitlement( $email, $password ){
 		return $this->get_entitlement( $email, $password, 'contact' );
 	}
-
 	
 	public function get_login(){
 		return $this->login();
@@ -618,6 +633,56 @@ class maghub_api {
 		$results = $this->get_request( $endpoint, $resource_name );
 		return $results;
 	}
+	
+	public function get_dynlist(){
+		$endpoint = "dynlist";
+		$resource_name = "dynlist";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	public function get_subscriber_by_id( $id ){
+		return $this->get_subscriber( $id );
+	}
+	
+	public function get_subscriber( $id ){
+		$id = intval( $id );
+		$endpoint = "subscribers/{$id}";
+		$resource_name = "subscriber";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	public function get_subscribers(){
+		$endpoint = "subscribers";
+		$resource_name = "subscribers";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	public function get_subscriber_subscriptions( $id ){
+		$id = intval( $id );
+		$endpoint = "subscribers/{$id}/subscriptions";
+		$resource_name = "subscriber-subscriptions";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	public function get_subscriptions( ){
+		$endpoint = "subscriptions";
+		$resource_name = "subscriptions";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	public function get_subscriptions_plans( ){
+		$endpoint = "subscriptionplans";
+		$resource_name = "subscriptionplans";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	
 	
 	
 	/*

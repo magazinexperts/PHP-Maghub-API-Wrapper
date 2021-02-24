@@ -1,13 +1,19 @@
 <?php
 include_once( 'includes/php_build_url.php');
+/*
 
+TODO: add field filter to every GET call_user_func
+TODO: add _embed to collapse objects to one call
+https://developer.wordpress.org/rest-api/using-the-rest-api/global-parameters/
+
+*/
 class maghub_api {
 	private $base_url;
 	private $private_key;
 	private $public_key;
 	protected $headers = array();
 
-	public function __construct( $site_name = MAGHUB_SITE, $private_key = MAGHUB_PRIVATE_KEY, $public_key = MAGHUB_PUBLIC_KEY){
+	public function __construct( $site_name = MAGHUB_SITE, $private_key = MAGHUB_PRIVATE_KEY, $public_key = MAGHUB_PUBLIC_KEY ){
 		$this->base_url = 'https://'. $site_name .'.api.maghub.com/';
 		$this->private_key = $private_key;
 		$this->public_key = $public_key;
@@ -471,6 +477,30 @@ class maghub_api {
 		$results = $this->get_request( $endpoint, $resource_name );
 		return $results;
 	}
+	
+	public function get_project( $id ){
+		$id = intval( $id );
+		$endpoint = "projects/{$id}";
+		$resource_name = "project";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	public function get_project_tasks( $id ){
+		$id = intval( $id );
+		$endpoint = "projects/{$id}/tasks";
+		$resource_name = "project-tasks";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
+	public function get_task( $id ){
+		$id = intval( $id );
+		$endpoint = "tasks/{$id}";
+		$resource_name = "task";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
 
 	public function get_publications(){
 		$available_args = array(
@@ -498,7 +528,7 @@ class maghub_api {
 		$results = $this->get_request( $endpoint, $resource_name );
 		return $results;
 	}
-	
+
 	public function get_ticket_statuses(){
 		$endpoint = "ticket-statuses";
 		$resource_name = "ticket-statuses";
@@ -514,13 +544,20 @@ class maghub_api {
 		return $results;
 	}
 	
+	public function get_service_ticket( $id ){
+		$id = intval( $id );
+		$endpoint = "service-ticket/{$id}";
+		$resource_name = "service-ticket";
+		$results = $this->get_request( $endpoint, $resource_name );
+		return $results;
+	}
+	
 	public function get_vendors(){
 		$endpoint = "vendors";
 		$resource_name = "vendors";
 		$results = $this->get_request( $endpoint, $resource_name );
 		return $results;
 	}
-
 
 	public function get_vendor( $id ){
 		$id = intval( $id );
@@ -600,33 +637,42 @@ class maghub_api {
 		//$extra_headers = array(), $body = array() 
 	}
 	
+	/* Work In Process */
 	function helper_set_company_attribute_field_value( $company_id, $field_name, $value ){
 		
 	}
+	
+	/* Work In Process */
 	public function get_user_information(){
 		
 	}
 	
+	/* Work In Process */
 	public function get_user_info(){
 		return $this->get_user_information();
 	}
 	
+	/* Work In Process */
 	public function get_issues_by_token( $token ){
 		
 	}
 	
+	/* Work In Process */
 	public function get_subscriptions_by_token( $token ){
 		
 	}
 	
+	/* Work In Process */
 	public function get_issues_by_subscriptions_and_token( $subscription_id, $token ){
 		
 	}
 	
+	/* Work In Process */
 	public function get_issues_by_publicatication_and_token( $publication_id, $token ){
 		
 	}
 	
+	/* Work In Process */
 	public function create_contact(){
 		$endpoint = "contacts/0";
 		$resource_name = "contacts";
@@ -653,20 +699,24 @@ class maghub_api {
 		
 	}
 	
+	/* Work In Process */
 	public function update_contact( $contact_id ){
 		$contact_id = intval( $contact_id );
 		
 	}
 	
+	/* Work In Process */
 	public function create_company(){
 		
 	}
 	
+	/* Work In Process */
 	public function update_company( $company_id ){
 		$company_id = intval( $company_id );
 		
 	}
 	
+	/* Work In Process */
 	public function create_subscriber(){
 		$available_args = array(
 			'firstName',
@@ -696,6 +746,7 @@ class maghub_api {
 		);
 	}
 	
+	/* Work In Process */
 	public function create_subscription(){
 		$endpoint = "subscriptions/0";
 		$resource_name = "subscription";
@@ -729,10 +780,12 @@ class maghub_api {
 		
 	}
 	
+	/* Work In Process */
 	public function update_subscription( $subscription_id ){
 		$subscription_id = intval( $subscription_id );
 		
 	}
+	
 	
 }
 ?>
